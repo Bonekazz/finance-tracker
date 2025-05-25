@@ -1,29 +1,6 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { FinRecord } from "@/lib/FinRecord/types";
 
-type RecordType = "expense" | "income";
-
-interface Record {
-  id: string,
-  title: string,
-  amount: number,
-  type: RecordType,
-  date: Date,
-  categories: Category[],
-}
-
-interface Category {
-  id: string,
-  title: string
-}
-
-const data: Record[] = [
+export const recordsData: FinRecord[] = [
   {
     id: "1",
     title: "Salary",
@@ -42,7 +19,8 @@ const data: Record[] = [
     date: new Date("2025-05-02"),
     categories: [
       { id: "c2", title: "Food" },
-      { id: "c3", title: "Essentials" }
+      { id: "c3", title: "Essentials" },
+      { id: "c1", title: "Job" }
     ]
   },
   {
@@ -126,32 +104,3 @@ const data: Record[] = [
     ]
   }
 ];
-
-export default function Page() {
-  return (
-    <div className="w-full h-full flex flex-col items-center pt-13">
-      <div className="w-[80vw] flex flex-col p-3 border-1 rounded-3xl">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Titulo</TableHead>
-              <TableHead>Valor</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Data</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-          { data && data.map((record: Record) => (
-            <TableRow className="cursor-pointer py-2">
-              <TableCell>{record.title}</TableCell>
-              <TableCell>R$ {record.amount}</TableCell>
-              <TableCell>{record.type}</TableCell>
-              <TableCell>{record.date.toLocaleDateString('pt-BR', { year: 'numeric', month: 'long', day: 'numeric' })}</TableCell>
-            </TableRow>
-          ))}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
-  )
-}
