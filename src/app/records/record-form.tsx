@@ -42,11 +42,14 @@ import { categoriesData } from "@/data/categories";
 import { FinCategory } from "@/lib/FinCategory/type";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
 
 interface Props {
   onSuccess: (newRecord: FinRecord) => void,
 }
 export function RecordForm({ onSuccess }: Props) {
+
+  const [isLoading, setIsloading] = useState(false);
 
   const categories = categoriesData;
 
@@ -63,10 +66,24 @@ export function RecordForm({ onSuccess }: Props) {
 
   async function onSubmit(data: z.infer<typeof recordSchema>) {
 
-    // API call here
+    try {
+      // API call here
+      const req = await fetch("/api/records", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }); 
+      setIsloading(true);
+      if (!req.ok) throw new Error();
+
+      const res = await req.json();
+      console.log(res);
+
+      
+      const selectedCategories = categoriesData.filter(x => data.categories.find(y => y === x.id));
+      onSuccess({id: data.title + data.amount, ...data, categories: selectedCategories});
+
+    } catch (error) {} finally { setIsloading(false) }
     
-    const selectedCategories = categoriesData.filter(x => data.categories.find(y => y === x.id));
-    onSuccess({id: data.title + data.amount, ...data, categories: selectedCategories});
   }
 
   return (
@@ -75,6 +92,7 @@ export function RecordForm({ onSuccess }: Props) {
 
         { /** TITLE **/ }
         <FormField
+          disabled={isLoading}
           control={form.control}
           name="title"
           render={({ field }) => (
@@ -118,6 +136,7 @@ export function RecordForm({ onSuccess }: Props) {
 
           { /** TYPE **/ }
           <FormField
+            disabled={isLoading}
             control={form.control}
             name="type"
             render={({ field }) => (
@@ -150,6 +169,7 @@ export function RecordForm({ onSuccess }: Props) {
 
         { /** DATE **/ }
         <FormField
+          disabled={isLoading}
           control={form.control}
           name="date"
           render={({ field }) => (
@@ -197,6 +217,7 @@ export function RecordForm({ onSuccess }: Props) {
         <Card>
           <CardContent>
             <FormField
+              disabled={isLoading}
               control={form.control}
               name="categories"
               render={() => (
@@ -245,7 +266,9 @@ export function RecordForm({ onSuccess }: Props) {
           </CardContent>
         </Card>
 
-        <Button type="submit" className="cursor-pointer">Salvar</Button>
+        <Button type="submit" className="cursor-pointer">
+        {isLoading ? <LoadingSpinner/> : "Salvar"}
+        </Button>
       </form>
     </Form>  
   )
