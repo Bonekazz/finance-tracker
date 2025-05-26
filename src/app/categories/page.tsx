@@ -22,8 +22,6 @@ import { Button } from "@/components/ui/button";
 import { CategoryForm } from "./category-form";
 import { categoriesData } from "@/data/categories";
 
-
-
 export default function Page() {
   
   const [ categories, setCategories ] = useState<FinCategory[]>(categoriesData);

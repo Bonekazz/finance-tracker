@@ -1,4 +1,4 @@
-import { FinRecord } from "@/lib/FinRecord/types";
+import { FinRecord } from "@/lib/FinRecord/type";
 
 export const recordsData: FinRecord[] = [
   {
