@@ -38,11 +38,17 @@ import {
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
+import { categoriesData } from "@/data/categories";
+import { FinCategory } from "@/lib/FinCategory/type";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Props {
   onSuccess: (newRecord: FinRecord) => void,
 }
 export function RecordForm({ onSuccess }: Props) {
+
+  const categories = categoriesData;
 
   const form = useForm<z.infer<typeof recordSchema>>({
     resolver: zodResolver(recordSchema),
@@ -59,7 +65,8 @@ export function RecordForm({ onSuccess }: Props) {
 
     // API call here
     
-    // onSuccess({id: data.title, title: data.title});
+    const selectedCategories = categoriesData.filter(x => data.categories.find(y => y === x.id));
+    onSuccess({id: data.title + data.amount, ...data, categories: selectedCategories});
   }
 
   return (
@@ -169,15 +176,11 @@ export function RecordForm({ onSuccess }: Props) {
                 </PopoverTrigger>
                 <PopoverContent 
                   className="w-auto p-0" align="start"
-                  onInteractOutside={(e) => e.preventDefault()}
                 >
                   <Calendar
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
                     initialFocus
                   />
                 </PopoverContent>
@@ -189,6 +192,58 @@ export function RecordForm({ onSuccess }: Props) {
             </FormItem>
           )}
         />
+
+        { /** CATEGORIES **/ }
+        <Card>
+          <CardContent>
+            <FormField
+              control={form.control}
+              name="categories"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Categorias</FormLabel>
+                  <FormDescription>
+                    Selecione pelo menos uma categoria.
+                  </FormDescription>
+                    <div className="grid grid-cols-2 gap-2 mt-2 overflow-y-auto">
+                    {categories.map((category: FinCategory) => (
+                      <FormField
+                        key={category.id}
+                        control={form.control}
+                        name="categories"
+                        render={({ field }) => {
+                          const isChecked = field.value?.includes(category.id);
+                          return (
+                            <FormItem
+                              key={category.id}
+                              className="flex flex-row items-center space-x-3 space-y-0 w-fit"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={isChecked}
+                                  onCheckedChange={(checked) => {
+                                    const id = category.id;
+                                    if (checked) {
+                                      field.onChange([...field.value, id]);
+                                    } else {
+                                      field.onChange(field.value.filter((v: string) => v !== id));
+                                    }
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">{category.title}</FormLabel>
+                            </FormItem>
+                          );
+                        }}
+                      />
+                    ))}
+                    </div>
+                  <FormMessage />
+                </FormItem>
+              )} 
+            />
+          </CardContent>
+        </Card>
 
         <Button type="submit" className="cursor-pointer">Salvar</Button>
       </form>

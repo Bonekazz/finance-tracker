@@ -42,7 +42,10 @@ export default function Page() {
           </DialogTrigger>
           <DialogContent>
             <DialogTitle hidden={true}>title</DialogTitle>
-            <RecordForm onSuccess={() => {}}/>
+            <RecordForm onSuccess={(newRecord: FinRecord) => {
+              setRecords([newRecord, ...records]);
+              setIsDialogOpen(false);
+            }}/>
           </DialogContent>
         </Dialog>
 
