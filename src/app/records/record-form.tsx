@@ -68,11 +68,11 @@ export function RecordForm({ onSuccess }: Props) {
 
     try {
       // API call here
+      setIsloading(true);
       const req = await fetch("/api/records", {
         method: "POST",
         body: JSON.stringify(data),
       }); 
-      setIsloading(true);
       if (!req.ok) throw new Error();
 
       const res = await req.json();
@@ -82,7 +82,9 @@ export function RecordForm({ onSuccess }: Props) {
       const selectedCategories = categoriesData.filter(x => data.categories.find(y => y === x.id));
       onSuccess({id: data.title + data.amount, ...data, categories: selectedCategories});
 
-    } catch (error) {} finally { setIsloading(false) }
+    } catch (error) {
+
+    } finally { setIsloading(false) }
     
   }
 

@@ -9,9 +9,11 @@ export async function POST(req: NextRequest) {
       console.log("(!) Error: ", validatedBody.error.format());
       return NextResponse.json({error: "something went wrong"}, {status: 400});
     }
+
+    return NextResponse.json({ success: "record created!" });
+
   } catch (error) {
     console.error("(!) Error: ", error);
     return NextResponse.json({error: "Server Error"}, {status: 500});
   }
-  return NextResponse.json({success: "eae"});
 }

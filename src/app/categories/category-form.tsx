@@ -17,32 +17,88 @@ import {
 import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { FinCategory } from "@/lib/FinCategory/type";
-import { categorySchema } from "@/lib/FinCategory/schema";
+import { categoryFormSchema } from "@/lib/FinCategory/schema";
+import { useState } from "react";
 
 
 interface Props {
-  onSuccess: (newCategory: FinCategory) => void,
+  category?: FinCategory;
+  onSuccess?: (newCategory: FinCategory) => void,
+  onEditSuccess?: (updatedCategory: FinCategory) => void,
 }
-export function CategoryForm({ onSuccess }: Props) {
 
-  const form = useForm<z.infer<typeof categorySchema>>({
-    resolver: zodResolver(categorySchema),
+export function CategoryForm({ category, onSuccess, onEditSuccess }: Props) {
+  
+  const [ isLoading, setIsloading ] = useState(false);
+
+  const form = useForm<z.infer<typeof categoryFormSchema>>({
+    resolver: zodResolver(categoryFormSchema),
     defaultValues: {
-      title: "",
+      title: category?.title || "",
     }
   });
 
-  async function onSubmit(data: z.infer<typeof categorySchema>) {
+  async function handlePOST(data: z.infer<typeof categoryFormSchema>) {
 
-    // API call here
+    try {
+      if (!onSuccess) return console.error("(!) Error: Missing 'onSuccess' on create operation.");
+
+      // API call here
+      const req = await fetch("/api/categories", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }); 
+      if (!req.ok) throw new Error();
+
+      const res = await req.json();
+      console.log(res);
+
+      onSuccess({id: data.title, title: data.title}); // use the returned data from api request
+
+    } catch (error) {
+
+    } finally { setIsloading(false) }
+
+  }
+
+  async function handlePUT(data: z.infer<typeof categoryFormSchema>, category: FinCategory) {
     
-    onSuccess({id: data.title, title: data.title});
+    try {
+      if (!onEditSuccess) return console.error("(!) Error: Missing 'onEditSuccess' on edit operation.");
+
+      const req = await fetch("/api/categories", {
+        method: "PUT",
+        body: JSON.stringify({ id: category.id, ...data }),
+      }); 
+      if (!req.ok) throw new Error();
+
+      const res = await req.json();
+      console.log(res);
+
+      onEditSuccess({id: category.id, ...data}); // use the returned data from api request
+
+    } catch (error) {} finally { setIsloading(false) }
+
+  }
+
+  async function onSubmit(data: z.infer<typeof categoryFormSchema>) {
+
+    setIsloading(true);
+
+    if (category) {
+      await handlePUT(data, category);
+      return;
+    }
+
+    await handlePOST(data); 
+    
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
+          disabled={isLoading}
           control={form.control}
           name="title"
           render={({ field }) => (
@@ -58,7 +114,9 @@ export function CategoryForm({ onSuccess }: Props) {
             </FormItem>
           )}
         />
-        <Button type="submit" className="cursor-pointer">Salvar</Button>
+        <Button type="submit" className="cursor-pointer w-full">
+        { isLoading ? <LoadingSpinner/> : "Salvar" }
+        </Button>
       </form>
     </Form>  
   )
