@@ -1,4 +1,5 @@
 import { FinRecord } from "@/lib/FinRecord/type";
+import { categoriesData } from "./categories";
 
 export const recordsData: FinRecord[] = [
   {
@@ -8,7 +9,9 @@ export const recordsData: FinRecord[] = [
     type: "income",
     date: new Date("2025-05-01"),
     categories: [
-      { id: "c1", title: "Job" }
+      categoriesData[0],
+      categoriesData[3],
+      categoriesData[7],
     ]
   },
   {
@@ -18,9 +21,8 @@ export const recordsData: FinRecord[] = [
     type: "expense",
     date: new Date("2025-05-02"),
     categories: [
-      { id: "c2", title: "Food" },
-      { id: "c3", title: "Essentials" },
-      { id: "c1", title: "Job" }
+      categoriesData[0],
+      categoriesData[3],
     ]
   },
   {
@@ -30,7 +32,8 @@ export const recordsData: FinRecord[] = [
     type: "income",
     date: new Date("2025-05-05"),
     categories: [
-      { id: "c4", title: "Freelance" }
+      categoriesData[3],
+      categoriesData[7],
     ]
   },
   {
@@ -40,7 +43,7 @@ export const recordsData: FinRecord[] = [
     type: "expense",
     date: new Date("2025-05-03"),
     categories: [
-      { id: "c5", title: "Housing" }
+      categoriesData[4],
     ]
   },
   {
@@ -50,7 +53,7 @@ export const recordsData: FinRecord[] = [
     type: "expense",
     date: new Date("2025-05-06"),
     categories: [
-      { id: "c2", title: "Food" }
+      categoriesData[6],
     ]
   },
   {
@@ -60,7 +63,8 @@ export const recordsData: FinRecord[] = [
     type: "income",
     date: new Date("2025-05-07"),
     categories: [
-      { id: "c6", title: "Investments" }
+      categoriesData[3],
+      categoriesData[4],
     ]
   },
   {
@@ -70,7 +74,8 @@ export const recordsData: FinRecord[] = [
     type: "expense",
     date: new Date("2025-05-08"),
     categories: [
-      { id: "c7", title: "Bills" }
+      categoriesData[4],
+      categoriesData[6],
     ]
   },
   {
@@ -80,7 +85,8 @@ export const recordsData: FinRecord[] = [
     type: "income",
     date: new Date("2025-05-09"),
     categories: [
-      { id: "c8", title: "Personal" }
+      categoriesData[3],
+      categoriesData[4],
     ]
   },
   {
@@ -90,7 +96,8 @@ export const recordsData: FinRecord[] = [
     type: "expense",
     date: new Date("2025-05-10"),
     categories: [
-      { id: "c2", title: "Food" }
+      categoriesData[2],
+      categoriesData[3],
     ]
   },
   {
@@ -100,7 +107,8 @@ export const recordsData: FinRecord[] = [
     type: "income",
     date: new Date("2025-05-11"),
     categories: [
-      { id: "c1", title: "Job" }
+      categoriesData[4],
+      categoriesData[6],
     ]
   }
 ];

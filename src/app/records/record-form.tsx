@@ -19,7 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { FinRecord } from "@/lib/FinRecord/type";
-import { recordSchema } from "@/lib/FinRecord/schema";
+import { recordFormSchema } from "@/lib/FinRecord/schema";
 
 import {
   Select,
@@ -45,30 +45,52 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 
 interface Props {
-  onSuccess: (newRecord: FinRecord) => void,
+  record?: FinRecord;
+  onSuccess?: (newRecord: FinRecord) => void,
+  onEditSuccess?: (updatedRecord: FinRecord) => void,
 }
-export function RecordForm({ onSuccess }: Props) {
+export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
 
   const [isLoading, setIsloading] = useState(false);
 
   const categories = categoriesData;
 
-  const form = useForm<z.infer<typeof recordSchema>>({
-    resolver: zodResolver(recordSchema),
+  const form = useForm<z.infer<typeof recordFormSchema>>({
+    resolver: zodResolver(recordFormSchema),
     defaultValues: {
-      title: "",
-      amount: 2,
-      type: "expense",
-      date: new Date(),
-      categories: []
+      title: record?.title || "",
+      amount: record?.amount || 2,
+      type: record?.type || "expense",
+      date: record?.date || new Date(),
+      categories: record?.categories.map((x: FinCategory) => x.id) || []
     }
   });
 
-  async function onSubmit(data: z.infer<typeof recordSchema>) {
+  async function onSubmit(data: z.infer<typeof recordFormSchema>) {
+    setIsloading(true);
 
+    if (record) {
+      if (!onEditSuccess) return console.error("(!) Error: missing 'onSuccess' function on Create operation.");
+
+      try {
+        const req = await fetch("/api/records", {
+          method: "PUT",
+          body: JSON.stringify({ ...data, id: record.id }),
+        }); 
+        if (!req.ok) throw new Error();
+
+        const res = await req.json();
+        console.log(res);
+        
+      } catch (error) {} finally { setIsloading(false) }
+
+      const selectedCategories = categoriesData.filter(x => data.categories.find(y => y === x.id));
+      onEditSuccess({...data, id: record.id, categories: selectedCategories}); // Use api response data;
+      return;
+    }
+    
+    if (!onSuccess) return console.error("(!) Error: missing 'onSuccess' function on Create operation.");
     try {
-      // API call here
-      setIsloading(true);
       const req = await fetch("/api/records", {
         method: "POST",
         body: JSON.stringify(data),
@@ -80,7 +102,7 @@ export function RecordForm({ onSuccess }: Props) {
 
       
       const selectedCategories = categoriesData.filter(x => data.categories.find(y => y === x.id));
-      onSuccess({id: data.title + data.amount, ...data, categories: selectedCategories});
+      onSuccess({id: data.title + data.amount, ...data, categories: selectedCategories}); // Use api response data;
 
     } catch (error) {
 
@@ -246,11 +268,10 @@ export function RecordForm({ onSuccess }: Props) {
                                   checked={isChecked}
                                   onCheckedChange={(checked) => {
                                     const id = category.id;
-                                    if (checked) {
-                                      field.onChange([...field.value, id]);
-                                    } else {
-                                      field.onChange(field.value.filter((v: string) => v !== id));
-                                    }
+
+                                    if (checked) return field.onChange([...field.value, id]);
+
+                                    field.onChange(field.value.filter((v: string) => v !== id));
                                   }}
                                 />
                               </FormControl>

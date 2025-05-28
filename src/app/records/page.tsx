@@ -25,17 +25,27 @@ import { Button } from "@/components/ui/button";
 
 import { useState } from "react";
 import { RecordForm } from "./record-form";
+import { Pencil } from "lucide-react";
 
 export default function Page() {
 
   const [ records, setRecords ] = useState<FinRecord[]>(recordsData)
   const [ isDialogOpen, setIsDialogOpen ] = useState<boolean>(false);
+  const [ isEditDialogOpen, setIsEditDialogOpen ] = useState<boolean>(false);
+
+  const [ recordToEdit, setRecordToEdit ] = useState<FinRecord | null>(null);
+
+  function handleClickEdit(record: FinRecord) {
+    setRecordToEdit(record);
+    setIsEditDialogOpen(true);
+  }
 
   return (
     <div className="w-full h-full flex flex-col items-center pt-13">
 
       <div className="flex flex-col items-end gap-6">
-
+        
+        { /** CREATE DIALOG **/ }
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild className="ml-2">
             <Button className="cursor-pointer">Adicionar Registro</Button>
@@ -49,6 +59,26 @@ export default function Page() {
           </DialogContent>
         </Dialog>
 
+        { /** EDIT DIALOG **/ }
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent aria-describedby={undefined}>
+            <DialogTitle hidden={true}>title</DialogTitle>
+            {recordToEdit && (
+              <RecordForm 
+                record={recordToEdit} 
+                onEditSuccess={ (record: FinRecord) => {
+                  const toUpdateIndex = records.findIndex(x => x.id === record.id);
+                  if (toUpdateIndex < 0) return console.error("(!) Error: record id not found");
+
+                  records[toUpdateIndex] = {...record, id: records[toUpdateIndex].id};
+
+                  setRecords(records);
+                  setIsEditDialogOpen(false);
+                }}/>
+            )}
+          </DialogContent>
+        </Dialog>
+
         <div className="w-[80vw] flex flex-col p-3 border-1 rounded-3xl">
           <Table>
             <TableHeader>
@@ -58,6 +88,7 @@ export default function Page() {
                 <TableHead>Tipo</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead>Categorias</TableHead>
+                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -78,6 +109,11 @@ export default function Page() {
                 {record.categories.map((cat: FinCategory) => (
                   <Badge key={cat.id} variant="outline">{cat.title}</Badge>
                 ))}
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button variant="outline" className="cursor-pointer" onClick={() => {handleClickEdit(record)}}>
+                    <Pencil/>
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
