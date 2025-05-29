@@ -6,7 +6,11 @@ export interface FinRecord {
   id: string,
   title: string,
   amount: number,
-  type: RecordType,
+  type: RecordType | string,
   date: Date,
+
   categories: FinCategory[],
+
+  createdAt: Date,
+  updatedAt: Date,
 }

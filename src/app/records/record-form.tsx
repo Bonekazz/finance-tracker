@@ -4,8 +4,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { format } from "date-fns";
-
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -38,11 +36,10 @@ import {
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
-import { categoriesData } from "@/data/categories";
 import { FinCategory } from "@/lib/FinCategory/type";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Props {
   record?: FinRecord;
@@ -52,8 +49,22 @@ interface Props {
 export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
 
   const [isLoading, setIsloading] = useState(false);
+  const [categories, setCategories] = useState<FinCategory[] | null>(null);
 
-  const categories = categoriesData;
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  async function fetchCategories() {
+    try {
+      const req = await fetch("/api/categories");
+      const res = await req.json();
+      setCategories(res.categories);
+
+    } catch (error) {
+      console.error("(!) Error: error fetching categories.");
+    }
+  }
 
   const form = useForm<z.infer<typeof recordFormSchema>>({
     resolver: zodResolver(recordFormSchema),
@@ -68,6 +79,7 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
 
   async function onSubmit(data: z.infer<typeof recordFormSchema>) {
     setIsloading(true);
+    if (!categories) return console.error("(!) Error: no categories available.");
 
     if (record) {
       if (!onEditSuccess) return console.error("(!) Error: missing 'onSuccess' function on Create operation.");
@@ -80,12 +92,10 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
         if (!req.ok) throw new Error();
 
         const res = await req.json();
-        console.log(res);
+        onEditSuccess({ ...res.record, date: new Date(res.record.date) });
         
       } catch (error) {} finally { setIsloading(false) }
 
-      const selectedCategories = categoriesData.filter(x => data.categories.find(y => y === x.id));
-      onEditSuccess({...data, id: record.id, categories: selectedCategories}); // Use api response data;
       return;
     }
     
@@ -99,10 +109,8 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
 
       const res = await req.json();
       console.log(res);
-
       
-      const selectedCategories = categoriesData.filter(x => data.categories.find(y => y === x.id));
-      onSuccess({id: data.title + data.amount, ...data, categories: selectedCategories}); // Use api response data;
+      onSuccess({ ...res.record, date: new Date(res.record.date) });
 
     } catch (error) {
 
@@ -133,7 +141,7 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
           )}
         />
 
-        <div className="flex justify-between">
+        <div className="flex flex-col gap-6 md:flex-row md:justify-between">
           { /** AMOUNT **/ }
           <FormField
             control={form.control}
@@ -145,8 +153,11 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
                   <div className="flex items-center gap-2">
                     <span>R$</span>
                     <Input 
-                      type="number" placeholder="título da categoria" min={0} {...field} 
-                      onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
+                      type="number" placeholder="valor do registro" min={0} step="any" {...field} 
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        field.onChange(value === "" ? "" : parseFloat(value));
+                      }}
                     />
                   </div>
                 </FormControl>
@@ -171,7 +182,7 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-full md:w-[180px]">
                       <SelectValue placeholder="Selecione o tipo" />
                     </SelectTrigger>
                     <SelectContent>
@@ -205,12 +216,12 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-[240px] pl-3 text-left font-normal",
+                        "w-full md:w-[240px] pl-3 text-left font-normal",
                         !field.value && "text-muted-foreground"
                       )}
                     >
                       {field.value ? (
-                        format(field.value, "PPP")
+                        field.value.toLocaleDateString('pt-BR', { year: 'numeric', month: 'short', day: 'numeric' })
                       ) : (
                         <span>Pick a date</span>
                       )}
@@ -251,7 +262,7 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
                     Selecione pelo menos uma categoria.
                   </FormDescription>
                     <div className="grid grid-cols-2 gap-2 mt-2 overflow-y-auto">
-                    {categories.map((category: FinCategory) => (
+                    { categories && categories.map((category: FinCategory) => (
                       <FormField
                         key={category.id}
                         control={form.control}
@@ -289,7 +300,7 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
           </CardContent>
         </Card>
 
-        <Button type="submit" className="cursor-pointer">
+        <Button type="submit" className="cursor-pointer w-full">
         {isLoading ? <LoadingSpinner/> : "Salvar"}
         </Button>
       </form>
