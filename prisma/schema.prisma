@@ -14,14 +14,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id      String @id @default(uuid())
-  clerkId String
-
-  records    Record[]
-  categories Category[]
-}
-
 model Record {
   id     String @id @default(uuid())
   userId String
@@ -32,8 +24,6 @@ model Record {
   date   DateTime
 
   categories Category[]
-
-  user User @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -46,7 +36,6 @@ model Category {
   title String
 
   records Record[]
-  user    User     @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

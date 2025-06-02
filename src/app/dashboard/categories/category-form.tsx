@@ -53,7 +53,7 @@ export function CategoryForm({ category, onSuccess, onEditSuccess }: Props) {
       const res = await req.json();
       console.log(res);
 
-      onSuccess({id: data.title, title: data.title}); // use the returned data from api request
+      onSuccess(res.category); // use the returned data from api request
 
     } catch (error) {
 
@@ -75,7 +75,7 @@ export function CategoryForm({ category, onSuccess, onEditSuccess }: Props) {
       const res = await req.json();
       console.log(res);
 
-      onEditSuccess({id: category.id, ...data}); // use the returned data from api request
+      onEditSuccess(res.category); // use the returned data from api request
 
     } catch (error) {} finally { setIsloading(false) }
 

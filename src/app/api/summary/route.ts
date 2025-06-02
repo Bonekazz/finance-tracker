@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 function formatDate(date: Date) {
@@ -6,58 +7,67 @@ function formatDate(date: Date) {
 }
 
 export async function GET(req: NextRequest ) {
-  const searchParams = req.nextUrl.searchParams;
-  const from = searchParams.get("from");
-  const to = searchParams.get("to");
+  try {
+    const { userId } = await auth();
+    if (!userId) { return NextResponse.json({ error: "Not authorized" }, {status: 403}) }
 
-  console.log({ from, to });
+    const searchParams = req.nextUrl.searchParams;
+    const from = searchParams.get("from");
+    const to = searchParams.get("to");
 
-  if (!from || !to) return NextResponse.json({ error: "Invalid date range." }, { status: 400 });
+    console.log({ from, to });
 
-  const records = await prisma.record.findMany({  // or your model name
-    where: {
-      createdAt: {
-        gte: from,
-        lte: to,
+    if (!from || !to) return NextResponse.json({ error: "Invalid date range." }, { status: 400 });
+
+    const records = await prisma.record.findMany({  // or your model name
+      where: {
+        userId,
+        createdAt: {
+          gte: from,
+          lte: to,
+        },
       },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  })
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
 
-    const grouped = new Map<string, { date: string; income: number; expense: number }>()
+      const grouped = new Map<string, { date: string; income: number; expense: number }>()
 
-  for (const record of records) {
-    const date = formatDate(record.date);
+    for (const record of records) {
+      const date = formatDate(record.date);
 
-    if (!grouped.has(date)) {
-      grouped.set(date, { date, income: 0, expense: 0 })
+      if (!grouped.has(date)) {
+        grouped.set(date, { date, income: 0, expense: 0 })
+      }
+
+      const current = grouped.get(date)!
+
+      if (record.type === 'income') {
+        current.income += record.amount; continue;
+      }
+
+      if (record.type === 'expense') {
+        current.expense += record.amount; continue;
+      }
     }
 
-    const current = grouped.get(date)!
+    const chartData = Array.from(grouped.values()).sort((a, b) =>
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
 
-    if (record.type === 'income') {
-      current.income += record.amount; continue;
-    }
+    const totalIncome = records.filter( x => x.type === "income").reduce( (total, record) => total + record.amount, 0 );
+    const totalExpense = records.filter( x => x.type === "expense").reduce( (total, record) => total + record.amount, 0 );
+    const totalBalance = records.reduce( (total, rec) => {
+      if (rec.type === "income") return total + rec.amount;
+      if (rec.type === "expense") return total - rec.amount;
+      return total;
 
-    if (record.type === 'expense') {
-      current.expense += record.amount; continue;
-    }
+    }, 0);
+
+    return NextResponse.json({ totalIncome, totalExpense, totalBalance, chartData });
+
+  } catch (error) {
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
   }
-
-  const chartData = Array.from(grouped.values()).sort((a, b) =>
-    new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
-
-  const totalIncome = records.filter( x => x.type === "income").reduce( (total, record) => total + record.amount, 0 );
-  const totalExpense = records.filter( x => x.type === "expense").reduce( (total, record) => total + record.amount, 0 );
-  const totalBalance = records.reduce( (total, rec) => {
-    if (rec.type === "income") return total + rec.amount;
-    if (rec.type === "expense") return total - rec.amount;
-    return total;
-
-  }, 0);
-
-  return NextResponse.json({ totalIncome, totalExpense, totalBalance, chartData });
 }

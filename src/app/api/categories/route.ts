@@ -7,7 +7,10 @@ import { z } from "zod";
 export async function GET() {
   try {
 
-    const categories = await prisma.category.findMany({});
+    const { userId } = await auth();
+    if (!userId) { return NextResponse.json({ error: "Not authorized" }, {status: 403}) }
+
+    const categories = await prisma.category.findMany({where: { userId }});
     return NextResponse.json({ categories });
     
   } catch (error) {
@@ -18,11 +21,8 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     
-    const { userId: clerkId } = await auth();
-    if (!clerkId) { return NextResponse.json({ error: "Not authorized" }, {status: 403}) }
-
-    const user = await prisma.user.findFirst({ where: {clerkId} });
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const { userId} = await auth();
+    if (!userId) { return NextResponse.json({ error: "Not authorized" }, {status: 403}) }
 
     const validatedBody = categoryFormSchema.safeParse(await req.json())
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     const category = await prisma.category.create({
       data: {
         ...validatedBody.data,
-        user: { connect: { id: user.id } }
+        userId
       }
     });
 
@@ -50,11 +50,8 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const { userId: clerkId } = await auth();
-    if (!clerkId) { return NextResponse.json({ error: "Not authorized" }, {status: 403}) }
-
-    const user = await prisma.user.findFirst({ where: {clerkId} });
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const { userId } = await auth();
+    if (!userId) { return NextResponse.json({ error: "Not authorized" }, {status: 403}) }
 
     const validatedBody = categorySchema.safeParse(await req.json())
 
@@ -67,7 +64,7 @@ export async function PUT(req: NextRequest) {
     const { id } = validatedBody.data;
     const category = await prisma.category.findFirst({where: {id}});
     if (!category) return NextResponse.json({ error: "Category id not found."} , { status: 404 });
-    if (category.userId !== user.id) return NextResponse.json({ error: "Not authorized." }, { status: 403 });
+    if (category.userId !== userId) return NextResponse.json({ error: "Not authorized." }, { status: 403 });
 
     // Check if there's something to be updated (todo)
     
@@ -88,11 +85,8 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const { userId: clerkId } = await auth();
-    if (!clerkId) { return NextResponse.json({ error: "Not authorized" }, {status: 403}) }
-
-    const user = await prisma.user.findFirst({ where: {clerkId} });
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const { userId } = await auth();
+    if (!userId) { return NextResponse.json({ error: "Not authorized" }, {status: 403}) }
 
     const validatedBody = z.object({
       id: z.string().min(1)
@@ -107,7 +101,7 @@ export async function DELETE(req: NextRequest) {
     const { id } = validatedBody.data;
     const category = await prisma.category.findFirst({where: {id}});
     if (!category) return NextResponse.json({ error: "Category id not found." }, { status: 404 });
-    if (category.userId !== user.id) return NextResponse.json({ error: "Not authorized." }, { status: 403 });
+    if (category.userId !== userId) return NextResponse.json({ error: "Not authorized." }, { status: 403 });
     
     // delete category
     await prisma.category.delete({where: {id: category.id}});

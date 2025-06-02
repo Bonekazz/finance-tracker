@@ -40,6 +40,7 @@ import { FinCategory } from "@/lib/FinCategory/type";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
+import { ptBR } from "date-fns/locale";
 
 interface Props {
   record?: FinRecord;
@@ -236,6 +237,7 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
+                    locale={ptBR}
                     initialFocus
                   />
                 </PopoverContent>
