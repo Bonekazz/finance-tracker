@@ -12,7 +12,7 @@ export const recordSchema = z.object({
 });
 
 export const recordFormSchema = recordSchema.omit({id: true}).extend({
-  categories: z.array(z.string()).min(1, "Registro deve conter no mínimo 1 categoria"),
+  categories: z.array(z.string()),
 });
 
 

@@ -73,7 +73,7 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
       amount: record?.amount || 2,
       type: record?.type || "expense",
       date: record?.date || new Date(),
-      categories: record?.categories.map((x: FinCategory) => x.id) || []
+      categories: (record?.categories && record?.categories.map((x: FinCategory) => x.id)) || []
     }
   });
 
