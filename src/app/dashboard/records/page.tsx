@@ -10,7 +10,7 @@ export default async function Page() {
     });
 
     return (
-      <div>
+      <div className="w-full">
         <RecordPage recordsData={records}/>
       </div>
     )

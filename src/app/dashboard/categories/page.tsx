@@ -7,7 +7,7 @@ export default async function Page() {
     const categories = await prisma.category.findMany({});
 
     return (
-      <div>
+      <div className="w-full">
         <CategoriesPage categoriesData={categories}/>
       </div>
     )

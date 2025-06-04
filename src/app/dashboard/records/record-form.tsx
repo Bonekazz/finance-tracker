@@ -41,6 +41,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { ptBR } from "date-fns/locale";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
   record?: FinRecord;
@@ -50,6 +51,7 @@ interface Props {
 export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
 
   const [isLoading, setIsloading] = useState(false);
+  const [isLoadingCategories, setIsloadingCategories] = useState(false);
   const [categories, setCategories] = useState<FinCategory[] | null>(null);
 
   useEffect(() => {
@@ -58,9 +60,11 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
 
   async function fetchCategories() {
     try {
+      setIsloadingCategories(true);
       const req = await fetch("/api/categories");
       const res = await req.json();
       setCategories(res.categories);
+      setIsloadingCategories(false);
 
     } catch (error) {
       console.error("(!) Error: error fetching categories.");
@@ -259,12 +263,19 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
               name="categories"
               render={() => (
                 <FormItem>
-                  <FormLabel>Categorias</FormLabel>
+                  <FormLabel>Categorias (opcional)</FormLabel>
                   <FormDescription>
-                    Selecione pelo menos uma categoria.
+                  { (isLoadingCategories || ( categories && categories.length > 0 ) ? "Selecione pelo menos uma categoria." : (
+                    <div>
+                      <div>Você ainda não criou nenhuma categoria. <a href="/dashboard/categories" className="underline">Criar categoria.</a></div>
+                    </div>
+                  )) }
                   </FormDescription>
                     <div className="grid grid-cols-2 gap-2 mt-2 overflow-y-auto">
-                    { categories && categories.map((category: FinCategory) => (
+                    { !categories && isLoadingCategories && Array.from({ length: 5 }).map( (_, i) => (
+                      <Skeleton key={i} className="w-18 h-5 rounded-md"/>
+                    ))}
+                    { categories && categories.length > 0 && categories.map((category: FinCategory) => (
                       <FormField
                         key={category.id}
                         control={form.control}

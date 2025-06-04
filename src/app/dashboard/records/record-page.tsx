@@ -83,21 +83,25 @@ export function RecordPage({ recordsData }: Props) {
   return (
     <div className="w-full h-full flex flex-col items-center pt-13">
 
-      <div className="flex flex-col items-end gap-6">
+      <div className="w-full flex flex-col items-end gap-6">
         
-        { /** CREATE DIALOG **/ }
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild className="ml-2">
-            <Button className="cursor-pointer">Adicionar Registro</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogTitle hidden={true}>title</DialogTitle>
-            <RecordForm onSuccess={(newRecord: FinRecord) => {
-              setRecords([newRecord, ...records]);
-              setIsDialogOpen(false);
-            }}/>
-          </DialogContent>
-        </Dialog>
+        <div className="w-full flex justify-between px-3">
+          <h1 className="text-3xl font-bold">Registros</h1>
+
+          { /** CREATE DIALOG **/ }
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild className="ml-2">
+              <Button className="cursor-pointer">Adicionar Registro</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogTitle hidden={true}>title</DialogTitle>
+              <RecordForm onSuccess={(newRecord: FinRecord) => {
+                setRecords([newRecord, ...records]);
+                setIsDialogOpen(false);
+              }}/>
+            </DialogContent>
+          </Dialog>
+        </div>
 
         { /** EDIT DIALOG **/ }
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -135,8 +139,8 @@ export function RecordPage({ recordsData }: Props) {
           </AlertDialogContent>
         </AlertDialog>
 
-        <div className="w-[80vw] h-[70vh] py-5 px-5 flex flex-col border-1 rounded-3xl bg-white">
-          <Table>
+        <div className="w-full h-[70vh] px-5 py-5 flex flex-col border-1 rounded-3xl bg-white">
+          <Table className="">
             <TableHeader>
               <TableRow>
                 <TableHead></TableHead>

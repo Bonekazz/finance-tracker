@@ -84,23 +84,27 @@ export function CategoriesPage({ categoriesData }: Props) {
   return (
     <div className="w-full h-full flex flex-col items-center pt-13">
 
-      <div className="flex flex-col items-end gap-6">
+      <div className="w-full flex flex-col items-end gap-6">
 
-        { /** CREATE DIALOG **/ }
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild className="ml-2">
-            <Button className="cursor-pointer">Adicionar Categoria</Button>
-          </DialogTrigger>
-          <DialogContent aria-describedby={undefined}>
-            <DialogTitle hidden={true}>title</DialogTitle>
-            <CategoryForm onSuccess={
-              (newCategory: FinCategory) => {
-                setCategories([newCategory,...categories])
-                setIsDialogOpen(false)
-              }
-            }/>
-          </DialogContent>
-        </Dialog>
+        <div className="w-full flex justify-between px-3">
+          <h1 className="text-3xl font-bold">Categorias</h1>
+
+          { /** CREATE DIALOG **/ }
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild className="ml-2">
+              <Button className="cursor-pointer">Adicionar Categoria</Button>
+            </DialogTrigger>
+            <DialogContent aria-describedby={undefined}>
+              <DialogTitle hidden={true}>title</DialogTitle>
+              <CategoryForm onSuccess={
+                (newCategory: FinCategory) => {
+                  setCategories([newCategory,...categories])
+                  setIsDialogOpen(false)
+                }
+              }/>
+            </DialogContent>
+          </Dialog> 
+        </div>
 
         { /** EDIT DIALOG **/ }
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -137,17 +141,19 @@ export function CategoriesPage({ categoriesData }: Props) {
           </AlertDialogContent>
         </AlertDialog> 
 
-        <div className="w-[80vw] flex flex-col p-3 border-1 rounded-3xl bg-white">
+        <div className="w-full flex flex-col px-5 py-5 h-[70vh] border-1 rounded-3xl bg-white">
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12"></TableHead>
                 <TableHead>Titulo</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-            { categories && categories.map((cat: FinCategory) => (
+            { categories && categories.map((cat: FinCategory, index: number) => (
               <TableRow key={cat.id} className="cursor-pointer py-2">
+                <TableCell className="text-muted-foreground text-sm">{index + 1}</TableCell>
                 <TableCell>{cat.title}</TableCell>
                 <TableCell className="text-right flex gap-2 justify-end">
                   <Button variant="outline" className="cursor-pointer" onClick={() => {handleClickEdit(cat)}}>
