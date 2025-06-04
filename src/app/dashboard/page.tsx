@@ -1,4 +1,3 @@
-import { DashboardPage } from "./dashboard-page";
 import DashboardPage2 from "./dashboard2";
 
 export default async function Page() {
