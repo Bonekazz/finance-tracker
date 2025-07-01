@@ -10,7 +10,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
   const { userId } = await auth();
   if (!userId) return redirect("/sign-in");
 
-  console.log("[ SERVER ] User id: ", userId);
+  // console.log("[ SERVER ] User id: ", userId);
   
   return (
     <SidebarProvider>

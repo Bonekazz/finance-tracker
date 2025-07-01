@@ -20,15 +20,6 @@ import { FinRecord } from "@/lib/FinRecord/type";
 import { recordFormSchema } from "@/lib/FinRecord/schema";
 
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -183,20 +174,14 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
               <FormItem>
                 <FormLabel>Tipo</FormLabel>
                 <FormControl>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
+                  <select
+                    className="flex h-10 w-full md:w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    {...field}
                   >
-                    <SelectTrigger className="w-full md:w-[180px]">
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value="expense">saída</SelectItem>
-                        <SelectItem value="income">entrada</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select> 
+                    <option disabled={true} value="">Selecione o tipo</option>
+                    <option value="expense">saída</option>
+                    <option value="income">entrada</option>
+                  </select>
                 </FormControl>
                 <FormDescription>
                   Selecione o tipo do registro. 
@@ -266,9 +251,9 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
                   <FormLabel>Categorias (opcional)</FormLabel>
                   <FormDescription>
                   { (isLoadingCategories || ( categories && categories.length > 0 ) ? "Selecione pelo menos uma categoria." : (
-                    <div>
-                      <div>Você ainda não criou nenhuma categoria. <a href="/dashboard/categories" className="underline">Criar categoria.</a></div>
-                    </div>
+                    <span>
+                      <span>Você ainda não criou nenhuma categoria. <a href="/dashboard/categories" className="underline">Criar categoria.</a></span>
+                    </span>
                   )) }
                   </FormDescription>
                     <div className="grid grid-cols-2 gap-2 mt-2 overflow-y-auto">

@@ -17,7 +17,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 const fetcher = (url: string) => fetch(url).then((res) => { 
   const data = res.json();
-  console.log("data: ", data);
   return data;
 });
 

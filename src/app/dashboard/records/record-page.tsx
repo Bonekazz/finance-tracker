@@ -10,21 +10,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-
 import { FinCategory } from "@/lib/FinCategory/type";
 import { FinRecord } from "@/lib/FinRecord/type";
 
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
@@ -124,20 +118,20 @@ export function RecordPage({ recordsData }: Props) {
         </Dialog>
 
         { /** DELETE ALERT DIALOG **/ }
-        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Tem certeza que deseja deletar o registro <span className="font-bold">"{recordToDelete?.title}"</span></AlertDialogTitle>
-              <AlertDialogDescription>
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Tem certeza que deseja deletar o registro <span className="font-bold">"{recordToDelete?.title}"</span></DialogTitle>
+              <DialogDescription>
                 Esta ação não poderá ser desfeita. Isto irá deletar permanentemente esta categoria.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
               <Button disabled={isLoading} onClick={ () => { setIsDeleteDialogOpen(false) } } variant="outline">Cancelar</Button>
               <Button disabled={isLoading} onClick={ () => { handleDelete(recordToDelete!) } } className="bg-red-200 border border-red-800/40 text-red-900 hover:bg-red-300">{ isLoading ? <LoadingSpinner/> : "Deletar" }</Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <div className="w-full h-[70vh] px-5 py-5 flex flex-col border-1 rounded-3xl bg-white">
           <Table className="">
