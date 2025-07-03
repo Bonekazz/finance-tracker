@@ -34,6 +34,24 @@ import { useEffect, useState } from "react";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Function to format currency input for Brazilian format
+function formatCurrencyInput(value: number): string {
+  if (value === 0) return "";
+  
+  // Convert to cents and pad with zeros
+  const cents = Math.round(value * 100);
+  const centsStr = cents.toString().padStart(3, '0');
+  
+  // Split into reais and centavos
+  const reais = centsStr.slice(0, -2) || "0";
+  const centavos = centsStr.slice(-2);
+  
+  // Format reais with thousands separator
+  const formattedReais = reais.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  
+  return `${formattedReais},${centavos}`;
+}
+
 interface Props {
   record?: FinRecord;
   onSuccess?: (newRecord: FinRecord) => void,
@@ -149,10 +167,19 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
                   <div className="flex items-center gap-2">
                     <span>R$</span>
                     <Input 
-                      type="number" placeholder="valor do registro" min={0} step="any" {...field} 
+                      type="text" 
+                      placeholder="0,00" 
+                      {...field} 
+                      value={field.value ? formatCurrencyInput(field.value) : ""}
                       onChange={(e) => {
-                        const value = e.target.value;
-                        field.onChange(value === "" ? "" : parseFloat(value));
+                        const rawValue = e.target.value.replace(/[^\d]/g, '');
+                        const numericValue = rawValue === "" ? 0 : parseInt(rawValue, 10) / 100;
+                        field.onChange(numericValue);
+                      }}
+                      onBlur={(e) => {
+                        if (field.value === 0) {
+                          field.onChange("");
+                        }
                       }}
                     />
                   </div>
@@ -178,7 +205,7 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
                     className="flex h-10 w-full md:w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     {...field}
                   >
-                    <option disabled={true} value="">Selecione o tipo</option>
+                    <option value="" disabled={true}>Selecione o tipo</option>
                     <option value="expense">saída</option>
                     <option value="income">entrada</option>
                   </select>
