@@ -302,7 +302,7 @@ export function RecordForm({record, onEditSuccess, onSuccess }: Props) {
                               <FormControl>
                                 <Checkbox
                                   checked={isChecked}
-                                  onCheckedChange={(checked) => {
+                                  onCheckedChange={(checked: boolean) => {
                                     const id = category.id;
 
                                     if (checked) return field.onChange([...field.value, id]);
