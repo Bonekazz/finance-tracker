@@ -1,9 +1,25 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "./app-sidebar"
 import { auth } from "@clerk/nextjs/server"
+import { CircleDollarSign, FileChartLine, House, LibraryBig } from "lucide-react";
 import { redirect } from "next/navigation";
-import { UserButton } from "@clerk/nextjs";
-import { Skeleton } from "@/components/ui/skeleton";
+
+const nav = [
+  {
+    title: "Inicio", href: "/home",
+    icon: House
+  },
+  {
+    title: "Regist.", href: "/records",
+    icon: CircleDollarSign 
+  },
+  {
+    title: "Categ.", href: "/categories",
+    icon: LibraryBig
+  },
+  {
+    title: "Análise", href: "/analytics",
+    icon: FileChartLine
+  },
+]
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   
@@ -13,24 +29,18 @@ export default async function Layout({ children }: { children: React.ReactNode }
   // console.log("[ SERVER ] User id: ", userId);
   
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <main className="w-full flex flex-col items-center">
-        <header className="w-full flex justify-between items-center py-5 px-12 bg-sidebar border-b border-sidebar-border">
-          <SidebarTrigger />
-          <UserButton 
-            fallback={(
-              <div className="flex gap-3 items-center">
-                <Skeleton className="h-4 w-[100px] rounded-md"/>
-                <Skeleton className="h-6 w-6 rounded-full"/>
-              </div>
-            )} 
-            showName={true} />
-        </header>
-        <div className="px-12 w-full">
-         {children}
-        </div>
-      </main>
-    </SidebarProvider>
+    <div className="w-full h-[100vh] grid grid-rows-[1fr_10%]">
+      {children}           
+      <div className="w-full bg-slate-300 px-5">
+        <nav className="w-full h-full flex gap-3 items-center justify-between">
+        { nav.map((n, i) => (
+          <a key={i} href={n.href} className="flex flex-col items-center gap-2">
+            <n.icon />
+            <p>{n.title}</p>
+          </a>
+        ))}
+        </nav>
+      </div>
+    </div>
   )
 }
