@@ -4,6 +4,29 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+export async function GET() {
+  try {
+    
+    const { userId } = await auth();
+    if (!userId) { return NextResponse.json({ error: "Not authorized" }, {status: 403}) }
+
+    const records = await prisma.record.findMany({
+      where: { userId },
+      select: {
+        id: true, title: true, amount: true, type: true, date: true, 
+        categories: { select: {
+          id: true, title: true,
+        }}
+      }, 
+    });
+    return NextResponse.json(records);
+
+  } catch (error) {
+    console.error("(!) Error: ", error);
+    return NextResponse.json({error: "Server Error"}, {status: 500});
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     
