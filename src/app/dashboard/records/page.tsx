@@ -1,28 +1,29 @@
-import { prisma } from "@/lib/prisma";
-import { RecordPage } from "./record-page";
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+"use client";
 
-export default async function Page() {
-  const { userId } = await auth();
-  if (!userId) return redirect("/sign-in");
+import { useRecords } from "@/hooks/useRecords";
+import { Record } from "./record";
 
-  try {
-    const records = await prisma.record.findMany({ 
-      where: {
-        userId,
-      },
-      orderBy: {date: "desc"},
-      include: { categories: true }
-    });
+export default function Page() {
+  const { records, error, isLoading } = useRecords();
 
-    return (
-      <div className="w-full">
-        <RecordPage recordsData={records}/>
+  return (
+    <div className="w-full h-full overflow-y-scroll flex flex-col">
+      <header className="w-full flex justify-between">
+        <h1 className="text-[32px] font-semibold max-w-[207px] leading-[35px]">Registros</h1>
+      </header>
+
+      { /** RECORDS **/ }
+      <div className="flex flex-col gap-3">
+      { records && records.map((rec: any, i: number) => (
+        <Record
+          key={i}
+          title={rec.title}
+          amount={rec.amount}
+          categories={rec.categories.map((x: any) => x.title)}
+          date={new Date(rec.date)}
+        />
+      )) }
       </div>
-    )
-
-  } catch (error) {
-    return <div>Internal Error</div>
-  }
+    </div>
+  )
 }
