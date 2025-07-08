@@ -1,0 +1,92 @@
+import React, { useRef, useState } from "react";
+
+interface IOSDrawerProps {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  children: React.ReactNode;
+  className?: string;
+  showHandle?: boolean;
+}
+
+export const IOSDrawer: React.FC<IOSDrawerProps> = ({
+  open,
+  onClose,
+  title,
+  children,
+  className = "",
+  showHandle = true,
+}) => {
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const startYRef = useRef<number | null>(null);
+  const [drawerOffset, setDrawerOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Touch event handlers for drag-to-close
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsDragging(true);
+    startYRef.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || startYRef.current === null) return;
+    const touchY = e.touches[0].clientY;
+    const deltaY = touchY - startYRef.current;
+    setDrawerOffset(deltaY > 0 ? deltaY : 0);
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    if (drawerOffset > 80) {
+      setDrawerOffset(0);
+      onClose();
+    } else {
+      // Animate back to position
+      setDrawerOffset(0);
+    }
+    startYRef.current = null;
+  };
+
+  return (
+    <div
+      className={`fixed inset-0 z-[9999] flex items-end justify-center transition-all duration-300 ${open ? "pointer-events-auto" : "pointer-events-none"}`}
+      aria-hidden={!open}
+    >
+      {/* Dimmed background */}
+      <div
+        className={`absolute inset-0 bg-black transition-opacity duration-300 ${open ? "opacity-40" : "opacity-0"}`}
+        onClick={onClose}
+      />
+      {/* Drawer */}
+      <div
+        ref={drawerRef}
+        className={`relative min-h-[50vh] w-full max-w-md bg-white rounded-t-2xl shadow-lg transition-transform duration-300 ${className} ${open ? "translate-y-0" : "translate-y-full"}`}
+        style={{
+          transform: open
+            ? `translateY(${drawerOffset}px)`
+            : "translateY(100%)",
+          transition: isDragging ? "none" : "transform 200ms cubic-bezier(0.4,0,0.2,1)",
+          touchAction: "none",
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Handle */}
+        {showHandle && (
+          <div className="flex justify-center pt-3 pb-1">
+            <div className="w-10 h-1.5 bg-gray-300 rounded-full" />
+          </div>
+        )}
+        {/* Title */}
+        {title && (
+          <div className="text-center font-semibold text-lg pb-2 px-4">{title}</div>
+        )}
+        {/* Content */}
+        <div className="px-4 pb-6 pt-2">{children}</div>
+      </div>
+    </div>
+  );
+};
+
+export default IOSDrawer; 
