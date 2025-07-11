@@ -1,17 +1,68 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, cloneElement, isValidElement, ReactElement } from "react";
 
-interface IOSDrawerProps {
-  open: boolean;
-  onClose: () => void;
+interface IOSDrawerContentProps {
   title?: string;
-  children: React.ReactNode;
   className?: string;
   showHandle?: boolean;
+  children: React.ReactNode;
 }
 
-export const IOSDrawer: React.FC<IOSDrawerProps> = ({
-  open,
-  onClose,
+interface IOSDrawerProps {
+  children: React.ReactNode;
+  open?: boolean;
+}
+
+const IOSDrawerContext = React.createContext<{
+  open: boolean;
+  setOpen: (open: boolean) => void;
+} | undefined>(undefined);
+
+const IOSDrawer: React.FC<IOSDrawerProps> & {
+  Trigger: React.FC<{ children: React.ReactNode }>;
+  Content: React.FC<IOSDrawerContentProps>;
+} = ({ children, open: controlledOpen }) => {
+  const [open, setOpen] = useState(!!controlledOpen);
+
+  // Sync with controlled prop if provided
+  React.useEffect(() => {
+    if (typeof controlledOpen === 'boolean') {
+      setOpen(controlledOpen);
+    }
+  }, [controlledOpen]);
+
+  // Split children into Trigger and Content
+  let trigger: ReactElement | null = null;
+  let content: ReactElement | null = null;
+
+  React.Children.forEach(children, (child) => {
+    if (!isValidElement(child)) return;
+    if ((child.type as any).displayName === "IOSDrawerTrigger") {
+      trigger = cloneElement(child as React.ReactElement<any>, { onClick: () => setOpen(true) });
+    } else if ((child.type as any).displayName === "IOSDrawerContent") {
+      content = cloneElement(child as React.ReactElement<any>, { open, onClose: () => setOpen(false) });
+    }
+  });
+
+  return (
+    <IOSDrawerContext.Provider value={{ open, setOpen }}>
+      {trigger}
+      {content}
+    </IOSDrawerContext.Provider>
+  );
+};
+
+const IOSDrawerTrigger: React.FC<{ children: React.ReactNode; onClick?: () => void }> = ({ children, onClick }) => {
+  // Just render the child with onClick
+  if (isValidElement(children)) {
+    return cloneElement(children as ReactElement, { onClick });
+  }
+  return <div className="w-fit h-fit" onClick={onClick}>{children}</div>;
+};
+IOSDrawerTrigger.displayName = "IOSDrawerTrigger";
+
+const IOSDrawerContent: React.FC<IOSDrawerContentProps & { open?: boolean; onClose?: () => void }> = ({
+  open = false,
+  onClose = () => {},
   title,
   children,
   className = "",
@@ -88,5 +139,9 @@ export const IOSDrawer: React.FC<IOSDrawerProps> = ({
     </div>
   );
 };
+IOSDrawerContent.displayName = "IOSDrawerContent";
 
-export default IOSDrawer; 
+IOSDrawer.Trigger = IOSDrawerTrigger;
+IOSDrawer.Content = IOSDrawerContent;
+
+export { IOSDrawer, IOSDrawerTrigger, IOSDrawerContent };
