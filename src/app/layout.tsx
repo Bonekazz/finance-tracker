@@ -1,18 +1,13 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Rubik } from "next/font/google";
 import "./globals.css";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+const rubik = Rubik({
+  variable: "--font-rubik",
+  weight: ["400", "700"],
+  subsets: ["latin"]
+})
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -26,9 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" className={`${rubik.variable}`}>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-100`}
+          className={`font-rubik antialiased bg-slate-100`}
         >
           {children}
         </body>
