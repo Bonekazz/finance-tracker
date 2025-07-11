@@ -11,15 +11,12 @@ export async function GET(req: NextRequest ) {
     const { userId } = await auth();
     if (!userId) { return NextResponse.json({ error: "Not authorized" }, {status: 403}) }
 
-    const searchParams = req.nextUrl.searchParams;
-    const from = searchParams.get("from");
-    const to = searchParams.get("to");
+    // Get current month range
+    const now = new Date();
+    const from = new Date(now.getFullYear(), now.getMonth(), 1);
+    const to = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-    console.log({ from, to });
-
-    if (!from || !to) return NextResponse.json({ error: "Invalid date range." }, { status: 400 });
-
-    const records = await prisma.record.findMany({  // or your model name
+    const records = await prisma.record.findMany({
       where: {
         userId,
         createdAt: {
@@ -32,7 +29,7 @@ export async function GET(req: NextRequest ) {
       },
     })
 
-      const grouped = new Map<string, { date: string; income: number; expense: number }>()
+    const grouped = new Map<string, { date: string; income: number; expense: number }>()
 
     for (const record of records) {
       const date = formatDate(record.date);
@@ -52,20 +49,14 @@ export async function GET(req: NextRequest ) {
       }
     }
 
-    const chartData = Array.from(grouped.values()).sort((a, b) =>
+    const summaryData = Array.from(grouped.values()).sort((a, b) =>
       new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
     const totalIncome = records.filter( x => x.type === "income").reduce( (total, record) => total + record.amount, 0 );
     const totalExpense = records.filter( x => x.type === "expense").reduce( (total, record) => total + record.amount, 0 );
-    const totalBalance = records.reduce( (total, rec) => {
-      if (rec.type === "income") return total + rec.amount;
-      if (rec.type === "expense") return total - rec.amount;
-      return total;
 
-    }, 0);
-
-    return NextResponse.json({ totalIncome, totalExpense, totalBalance, chartData });
+    return NextResponse.json({ totalIncome, totalExpense, summaryData });
 
   } catch (error) {
     return NextResponse.json({ error: "Internal Error" }, { status: 500 });
